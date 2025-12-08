@@ -60,6 +60,24 @@ When in doubt, write the code as if a mid-level frontend dev will maintain it fo
 
 * Use enums **only** if you need a runtime object. Otherwise use union string literals.
 
+* Array/object index access may return `undefined`—always check:
+  ```ts
+  const first = arr[0];
+  if (first === undefined) return;
+  ```
+
+* Use `import type` for type-only imports:
+  ```ts
+  import type { NoiseMode } from './types';
+  ```
+
+* Catch variables are `unknown`—narrow before use:
+  ```ts
+  catch (e) {
+    if (e instanceof Error) console.error(e.message);
+  }
+  ```
+
 ### 2.3 Functions and modules
 
 * Prefer small, single-purpose functions.

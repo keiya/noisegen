@@ -7,9 +7,133 @@
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body class="min-h-screen bg-neutral-900 text-neutral-100">
-    <main id="app" class="container mx-auto p-4">
-      <h1 class="text-2xl font-bold mb-4">Noise Generator</h1>
-      <p class="text-neutral-400">Ready to build.</p>
+    <main id="app" class="container mx-auto max-w-2xl p-4">
+      <h1 class="mb-6 text-2xl font-bold">Noise Generator</h1>
+
+      <!-- Error banner -->
+      <div
+        id="error-banner"
+        class="mb-4 hidden rounded-lg bg-red-900/50 px-4 py-3 text-red-200"
+      ></div>
+
+      <!-- Controls grid -->
+      <div class="grid gap-6 sm:grid-cols-2">
+        <!-- Playback section -->
+        <section class="rounded-xl bg-neutral-800 p-4">
+          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-neutral-400">
+            Playback
+          </h2>
+
+          <!-- Play button -->
+          <button
+            id="play-btn"
+            class="mb-4 w-full rounded-lg bg-sky-600 px-4 py-3 text-lg font-medium transition-colors hover:bg-sky-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+          >
+            Play
+          </button>
+
+          <!-- Noise type -->
+          <fieldset>
+            <legend class="mb-2 text-sm text-neutral-400">Noise Type</legend>
+            <div class="flex gap-2">
+              <button
+                id="pink-btn"
+                class="flex-1 rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium transition-colors hover:bg-sky-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+              >
+                Pink
+              </button>
+              <button
+                id="brown-btn"
+                class="flex-1 rounded-lg bg-neutral-700 px-4 py-2 text-sm font-medium transition-colors hover:bg-neutral-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
+              >
+                Brown
+              </button>
+            </div>
+          </fieldset>
+
+          <!-- Volume -->
+          <div class="mt-4">
+            <label class="mb-1 flex items-center justify-between text-sm text-neutral-400">
+              <span>Volume</span>
+              <span id="volume-value" class="font-mono text-neutral-300">-12dB</span>
+            </label>
+            <input
+              id="volume-slider"
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value="0.75"
+              class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-neutral-700 accent-sky-500"
+            />
+          </div>
+        </section>
+
+        <!-- Filter section -->
+        <section class="rounded-xl bg-neutral-800 p-4">
+          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-neutral-400">
+            Filters
+          </h2>
+
+          <!-- High-pass -->
+          <div class="mb-4">
+            <label class="mb-1 flex items-center justify-between text-sm text-neutral-400">
+              <span>High-pass (12dB/oct)</span>
+              <span id="hp-value" class="font-mono text-neutral-300">150Hz</span>
+            </label>
+            <input
+              id="hp-slider"
+              type="range"
+              min="1"
+              max="200"
+              step="1"
+              value="150"
+              class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-neutral-700 accent-sky-500"
+            />
+          </div>
+
+          <!-- Low-pass -->
+          <div class="mb-4">
+            <label class="mb-1 flex items-center justify-between text-sm text-neutral-400">
+              <span>Low-pass (12dB/oct)</span>
+              <span id="lp-value" class="font-mono text-neutral-300">5.0kHz</span>
+            </label>
+            <input
+              id="lp-slider"
+              type="range"
+              min="1000"
+              max="8000"
+              step="100"
+              value="5000"
+              class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-neutral-700 accent-sky-500"
+            />
+          </div>
+
+          <!-- Crossfeed -->
+          <div>
+            <label class="mb-1 flex items-center justify-between text-sm text-neutral-400">
+              <span>Crossfeed</span>
+              <span id="crossfeed-value" class="font-mono text-neutral-300">-18dB</span>
+            </label>
+            <input
+              id="crossfeed-slider"
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value="0.77"
+              class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-neutral-700 accent-sky-500"
+            />
+            <p class="mt-1 text-xs text-neutral-500">
+              Blend stereo channels (off &rarr; -9dB)
+            </p>
+          </div>
+        </section>
+      </div>
+
+      <footer class="mt-8 text-center text-xs text-neutral-600">
+        High-quality random noise using crypto.getRandomValues + entropy mixing.
+      </footer>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>
