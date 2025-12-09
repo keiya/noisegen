@@ -4,6 +4,7 @@
  * Audio context is created lazily on first user gesture (Play button).
  */
 import { AudioEngine } from './audio/engine/AudioEngine';
+import { PomodoroController } from './audio/engine/PomodoroController';
 import { createStateStore, DEFAULT_STATE, sliderToDb, dbToSlider, } from './ui/state';
 // --- DOM Helpers ---
 function getElement(id) {
@@ -38,6 +39,10 @@ async function main() {
     const lpValue = getElement('lp-value');
     const crossfeedSlider = getElement('crossfeed-slider');
     const crossfeedValue = getElement('crossfeed-value');
+    const normalModeBtn = getElement('normal-mode-btn');
+    const pomodoroModeBtn = getElement('pomodoro-mode-btn');
+    const pomodoroIndicator = getElement('pomodoro-indicator');
+    const pomodoroMinutesEl = getElement('pomodoro-minutes');
     const errorBanner = getElement('error-banner');
     // --- Initialize slider positions from default state ---
     volumeSlider.value = String(dbToSlider(store.get().volumeDb, -48, 0));
@@ -47,14 +52,68 @@ async function main() {
     crossfeedSlider.value = String(store.get().crossfeedDb === -Infinity
         ? 0
         : (store.get().crossfeedDb + 48) / (48 - 9));
+    // --- Pomodoro Controller ---
+    let pomodoroController = null;
+    let pomodoroVolumeOffset = 0; // Current volume offset from pomodoro
+    function startPomodoro() {
+        if (pomodoroController || !initialized)
+            return;
+        // Get RNG once and close over it
+        const rng = engine.getEntropyRng();
+        pomodoroController = new PomodoroController(() => rng.nextFloat(), (update) => {
+            store.set('pomodoroPhase', update.phase);
+            store.set('pomodoroMinutes', update.minutes);
+            pomodoroVolumeOffset = update.volumeOffsetDb;
+            // Apply LPF from pomodoro and update UI
+            engine.setLpFreq(update.lpfHz);
+            lpSlider.value = String(update.lpfHz);
+            lpValue.textContent = formatHz(update.lpfHz);
+            // Apply volume with offset
+            const currentState = store.get();
+            if (currentState.playing) {
+                engine.setVolumeDb(currentState.volumeDb + pomodoroVolumeOffset);
+            }
+        });
+        pomodoroController.start();
+    }
+    function stopPomodoro() {
+        if (!pomodoroController)
+            return;
+        pomodoroController.dispose();
+        pomodoroController = null;
+        pomodoroVolumeOffset = 0;
+        // Restore user's LPF setting and UI
+        const state = store.get();
+        engine.setLpFreq(state.lpFreq);
+        lpSlider.value = String(state.lpFreq);
+        lpValue.textContent = formatHz(state.lpFreq);
+        // Restore volume without offset
+        if (state.playing) {
+            engine.setVolumeDb(state.volumeDb);
+        }
+    }
     // --- State → Engine sync ---
     store.subscribe((state) => {
         engine.setPlaying(state.playing);
         engine.setMode(state.mode);
-        engine.setVolumeDb(state.volumeDb);
+        // Volume: apply pomodoro offset if active
+        const effectiveVolume = state.listenerMode === 'pomodoro'
+            ? state.volumeDb + pomodoroVolumeOffset
+            : state.volumeDb;
+        engine.setVolumeDb(effectiveVolume);
         engine.setHpFreq(state.hpFreq);
-        engine.setLpFreq(state.lpFreq);
+        // LPF: only apply user setting if not in pomodoro mode
+        if (state.listenerMode !== 'pomodoro') {
+            engine.setLpFreq(state.lpFreq);
+        }
         engine.setCrossfeedDb(state.crossfeedDb);
+        // Manage pomodoro controller lifecycle
+        if (state.listenerMode === 'pomodoro' && !pomodoroController) {
+            startPomodoro();
+        }
+        else if (state.listenerMode !== 'pomodoro' && pomodoroController) {
+            stopPomodoro();
+        }
     });
     // --- State → UI sync ---
     function updateUI() {
@@ -75,6 +134,24 @@ async function main() {
         hpValue.textContent = formatHz(state.hpFreq);
         lpValue.textContent = formatHz(state.lpFreq);
         crossfeedValue.textContent = formatDb(state.crossfeedDb);
+        // Listener mode buttons
+        normalModeBtn.classList.toggle('bg-sky-600', state.listenerMode === 'normal');
+        normalModeBtn.classList.toggle('bg-neutral-700', state.listenerMode !== 'normal');
+        pomodoroModeBtn.classList.toggle('bg-sky-600', state.listenerMode === 'pomodoro');
+        pomodoroModeBtn.classList.toggle('bg-neutral-700', state.listenerMode !== 'pomodoro');
+        // Pomodoro indicator
+        pomodoroIndicator.classList.toggle('hidden', state.listenerMode !== 'pomodoro');
+        pomodoroMinutesEl.textContent = String(state.pomodoroMinutes);
+        pomodoroMinutesEl.classList.toggle('text-rose-400/70', state.pomodoroPhase === 'work');
+        pomodoroMinutesEl.classList.toggle('text-emerald-400/70', state.pomodoroPhase === 'break');
+        // Disable HP/LP sliders in pomodoro mode
+        const inPomodoro = state.listenerMode === 'pomodoro';
+        hpSlider.disabled = inPomodoro;
+        lpSlider.disabled = inPomodoro;
+        hpSlider.classList.toggle('opacity-50', inPomodoro);
+        hpSlider.classList.toggle('cursor-not-allowed', inPomodoro);
+        lpSlider.classList.toggle('opacity-50', inPomodoro);
+        lpSlider.classList.toggle('cursor-not-allowed', inPomodoro);
     }
     store.subscribe(updateUI);
     updateUI();
@@ -86,6 +163,10 @@ async function main() {
             if (!initialized) {
                 await engine.init();
                 initialized = true;
+                // If pomodoro mode was selected before init, start it now
+                if (store.get().listenerMode === 'pomodoro') {
+                    startPomodoro();
+                }
             }
             await engine.resume();
             store.set('playing', !store.get().playing);
@@ -120,6 +201,12 @@ async function main() {
         // Map 0..1 to -Infinity..-9dB
         const db = s <= 0 ? -Infinity : -48 + s * (48 - 9);
         store.set('crossfeedDb', db);
+    });
+    normalModeBtn.addEventListener('click', () => {
+        store.set('listenerMode', 'normal');
+    });
+    pomodoroModeBtn.addEventListener('click', () => {
+        store.set('listenerMode', 'pomodoro');
     });
 }
 main().catch((err) => {

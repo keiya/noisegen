@@ -227,6 +227,14 @@ export class AudioEngine {
             rampTo(this.ctx, this.crossfeedRtoL.gain, gain);
     }
     /**
+     * Get the entropy RNG instance for external use (e.g., PomodoroController).
+     */
+    getEntropyRng() {
+        if (!this.entropyRng)
+            throw new Error('Engine not initialized');
+        return this.entropyRng;
+    }
+    /**
      * Clean up all resources.
      */
     dispose() {

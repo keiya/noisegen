@@ -3,6 +3,8 @@
  */
 
 export type NoiseMode = 'pink' | 'brown';
+export type ListenerMode = 'normal' | 'pomodoro';
+export type PomodoroPhase = 'work' | 'break';
 
 export interface AppState {
   playing: boolean;
@@ -11,6 +13,11 @@ export interface AppState {
   hpFreq: number;         // High-pass cutoff Hz (1–200)
   lpFreq: number;         // Low-pass cutoff Hz (1000–8000)
   crossfeedDb: number;    // Crossfeed level in dB (-Infinity to -9)
+
+  // Listener mode (pomodoro breathe mode, etc.)
+  listenerMode: ListenerMode;
+  pomodoroPhase: PomodoroPhase;  // Only meaningful when listenerMode === 'pomodoro'
+  pomodoroMinutes: number;       // Remaining minutes (for display)
 }
 
 export const DEFAULT_STATE: Readonly<AppState> = {
@@ -20,6 +27,9 @@ export const DEFAULT_STATE: Readonly<AppState> = {
   hpFreq: 150,
   lpFreq: 5000,
   crossfeedDb: -18,
+  listenerMode: 'normal',
+  pomodoroPhase: 'work',
+  pomodoroMinutes: 25,
 };
 
 // --- dB ↔ linear conversion ---

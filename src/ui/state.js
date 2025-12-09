@@ -8,6 +8,9 @@ export const DEFAULT_STATE = {
     hpFreq: 150,
     lpFreq: 5000,
     crossfeedDb: -18,
+    listenerMode: 'normal',
+    pomodoroPhase: 'work',
+    pomodoroMinutes: 25,
 };
 // --- dB ↔ linear conversion ---
 /**

@@ -269,6 +269,14 @@ export class AudioEngine {
   }
 
   /**
+   * Get the entropy RNG instance for external use (e.g., PomodoroController).
+   */
+  getEntropyRng(): EntropyRng {
+    if (!this.entropyRng) throw new Error('Engine not initialized');
+    return this.entropyRng;
+  }
+
+  /**
    * Clean up all resources.
    */
   dispose(): void {

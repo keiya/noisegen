@@ -51,6 +51,29 @@
             </div>
           </fieldset>
 
+          <!-- Listener Mode -->
+          <fieldset class="mt-4">
+            <legend class="mb-2 text-sm text-neutral-400">Listener Mode</legend>
+            <div class="flex gap-2">
+              <button
+                id="normal-mode-btn"
+                class="flex-1 rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium transition-colors hover:bg-sky-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+              >
+                Normal
+              </button>
+              <button
+                id="pomodoro-mode-btn"
+                class="flex-1 rounded-lg bg-neutral-700 px-4 py-2 text-sm font-medium transition-colors hover:bg-neutral-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
+              >
+                Pomodoro
+              </button>
+            </div>
+            <!-- Pomodoro indicator -->
+            <div id="pomodoro-indicator" class="mt-2 hidden text-center">
+              <span id="pomodoro-minutes" class="font-mono text-sm text-rose-400/70">25</span>
+            </div>
+          </fieldset>
+
           <!-- Volume -->
           <div class="mt-4">
             <label class="mb-1 flex items-center justify-between text-sm text-neutral-400">
