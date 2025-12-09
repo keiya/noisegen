@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build:worklet": "esbuild src/audio/worklets/NoiseProcessor.ts --outfile=public/worklets/NoiseProcessor.js --format=esm --target=esnext",
+    "build": "npm run build:worklet && tsc && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {

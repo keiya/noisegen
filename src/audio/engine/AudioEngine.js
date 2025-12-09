@@ -77,10 +77,9 @@ export class AudioEngine {
         // Start entropy collection
         this.entropyRng = new EntropyRng();
         this.entropyRng.start();
-        // Load worklet
-        const workletUrl = new URL('../worklets/NoiseProcessor.ts', import.meta.url);
+        // Load worklet (served from public/ as pre-compiled JS)
         try {
-            await this.ctx.audioWorklet.addModule(workletUrl);
+            await this.ctx.audioWorklet.addModule('/worklets/NoiseProcessor.js');
         }
         catch (err) {
             throw new Error('AudioWorklet init failed. Please use a modern browser.');
